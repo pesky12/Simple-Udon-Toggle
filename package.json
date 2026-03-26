@@ -1,0 +1,23 @@
+{
+  "name": "com.pesky.box.simpletoggle",
+  "displayName": "Simple Udon Toggle",
+  "version": "1.0.0",
+  "description": "A flexible toggle component for VRChat worlds. Supports GameObjects, Components, UI toggles, Udon events, and network sync with minimal setup.",
+  "unity": "2019.4",
+  "author": {
+    "name": "pesky12"
+  },
+  "vpmDependencies": {
+    "com.vrchat.worlds": "3.5.x"
+  },
+  "keywords": [
+    "vrchat",
+    "udon",
+    "udonsharp",
+    "toggle",
+    "worlds"
+  ],
+  "license": "MIT",
+  "changelogUrl": "https://github.com/pesky12/com.pesky.box.simpletoggle/releases",
+  "documentationUrl": "https://github.com/pesky12/com.pesky.box.simpletoggle#readme"
+}

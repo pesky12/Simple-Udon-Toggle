@@ -1,0 +1,20 @@
+{
+    "name": "com.pesky.box.simpletoggle.Editor",
+    "rootNamespace": "PeskyBox.SimpleToggle.Editor",
+    "references": [
+        "GUID:4e67c6f046d8c43488f74cc5a42b6b5b",
+        "GUID:3c1bc1267eab5884ebe7f232c09ee0d9",
+        "GUID:99835874ee819da44948776e0df4ff1d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
