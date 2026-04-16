@@ -468,10 +468,9 @@ public class SimpleUdonToggleEditor : Editor
         }
 
         // Apply back to arrays (merges with existing assignments)
-        // UI Toggles (Public field)
-        script.uiToggles = uiTogglesList.ToArray(); 
+        SetArray(so, "uiToggles", uiTogglesList.ToArray());
 
-        // Private arrays (using the SerializedObject created earlier)
+        // Other target arrays
         SetArray(so, "targetGameObjects", targetGameObjectsList.ToArray());
         SetArray(so, "gameObjectStateWhenOn", gameObjectStateWhenOnList.ToArray());
         SetArray(so, "gameObjectStateWhenOff", gameObjectStateWhenOffList.ToArray());
