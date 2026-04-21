@@ -265,16 +265,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
             ApplyState(isOn);
         }
 
-        // Persist locally if requested
-        if (persistLocally)
+        // Persist locally if requested (skip if not yet restored - OnPlayerRestored will apply saved state)
+        if (persistLocally && _restored)
         {
-            if (!_restored)
-            {
-                #if UNITY_EDITOR
-                Debug.LogWarning($"[SimpleUdonToggle] SetToggle called before OnPlayerRestored. Persistence may be overwritten. Waiting for restore event first.");
-                #endif
-                return; // Avoid writing before restore.
-            }
             PlayerData.SetBool(_computedPersistenceKey, isOn);
         }
     }
