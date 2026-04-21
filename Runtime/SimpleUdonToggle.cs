@@ -24,6 +24,7 @@ public enum NetworkMode
 [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
 public class SimpleUdonToggle : UdonSharpBehaviour
 {
+    #region Configuration Fields
     // --- Configuration ---
     [Header("Identification")]
     [Tooltip("Unique name for this toggle - used to auto-assign UI toggles with matching SimpleToggleMarker components")]
@@ -67,7 +68,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     [SerializeField] private SimpleUdonToggle[] otherTogglesToSync; // Other toggles to set to the same state
     [SerializeField] private bool[] otherTogglesStateWhenOn;     // true = set to ON, false = set to OFF
     [SerializeField] private bool[] otherTogglesStateWhenOff;
-    
+    #endregion
+
+    #region State Variables
     // --- Synced state ---
     [UdonSynced(UdonSyncMode.None)] public bool syncedIsOn;
 
@@ -76,7 +79,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     private string _computedPersistenceKey;
     private bool _restored = false;
     private bool _syncReceived = false; // Guards against race condition where Start() runs before OnDeserialization()
+    #endregion
 
+    #region Unity Lifecycle
     private void Start()
     {
         // Runtime safeguard: Persistence and Synced mode are mutually exclusive
@@ -135,8 +140,10 @@ public class SimpleUdonToggle : UdonSharpBehaviour
         Debug.Log($"[SimpleUdonToggle] Initialized. Owner:{Networking.IsOwner(gameObject)} NetMode:{networkMode} Default:{defaultOn} -> IsOn:{isOn}");
         #endif
     }
+    #endregion
 
 #if UNITY_EDITOR
+    #region Editor Validation
     private void OnValidate()
     {
         ValidateArrayLengths();
@@ -212,8 +219,10 @@ public class SimpleUdonToggle : UdonSharpBehaviour
             }
         }
     }
+    #endregion
 #endif
 
+    #region Public API
     // Public API: Toggle from other scripts
     public void Toggle()
     {
@@ -271,7 +280,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
             PlayerData.SetBool(_computedPersistenceKey, isOn);
         }
     }
+    #endregion
 
+    #region Network Events
     // Owner-only network events receivers
     public void RequestToggleOn()
     {
@@ -322,7 +333,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
         Debug.Log($"[SimpleUdonToggle] Player data restored. Key: '{_computedPersistenceKey}'. Applied state: {isOn}");
         #endif
     }
+    #endregion
 
+    #region State Application
     private void ApplyState(bool on)
     {
         // Update UI toggles without invoking their callbacks
@@ -392,7 +405,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
         Debug.Log($"[SimpleUdonToggle] ApplyState -> {(on ? "ON" : "OFF")}");
         #endif
     }
+    #endregion
 
+    #region VRC Callbacks
     // Interact support for click-based toggling
     public override void Interact()
     {
@@ -418,7 +433,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
 
         Toggle();
     }
+    #endregion
 
+    #region UI Callbacks
     // UI callback for Toggle components (passes bool parameter)
     // OnUiToggleChanged is public so it can be called from a Unity Event in the inspector.
     public void OnUiToggleChanged(bool val)
@@ -435,4 +452,5 @@ public class SimpleUdonToggle : UdonSharpBehaviour
         Debug.Log($"[SimpleUdonToggle] OnUiButtonClicked. New state: {isOn}" );
 #endif
     }
+    #endregion
 }
