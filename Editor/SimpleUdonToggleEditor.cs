@@ -109,16 +109,30 @@ public class SimpleUdonToggleEditor : Editor
         EditorGUILayout.LabelField("Core Settings", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(defaultOnProp);
         EditorGUILayout.PropertyField(networkModeProp);
-        EditorGUILayout.PropertyField(persistLocallyProp);
-        if (persistLocallyProp.boolValue)
+        
+        // Persistence is only valid for non-synced modes
+        NetworkMode currentMode = (NetworkMode)networkModeProp.enumValueIndex;
+        if (currentMode == NetworkMode.Synced)
         {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(persistenceKeyProp, new GUIContent("Persistence Key"));
-            if (string.IsNullOrEmpty(persistenceKeyProp.stringValue))
+            // Disable persistence option for synced mode
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.PropertyField(persistLocallyProp);
+            EditorGUI.EndDisabledGroup();
+            EditorGUILayout.HelpBox("Persistence is not available for Synced mode. Synced toggles use network state", MessageType.Info);
+        }
+        else
+        {
+            EditorGUILayout.PropertyField(persistLocallyProp);
+            if (persistLocallyProp.boolValue)
             {
-                EditorGUILayout.HelpBox("A unique Persistence Key is required to save the toggle state.", MessageType.Warning);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(persistenceKeyProp, new GUIContent("Persistence Key"));
+                if (string.IsNullOrEmpty(persistenceKeyProp.stringValue))
+                {
+                    EditorGUILayout.HelpBox("A unique Persistence Key is required to save the toggle state.", MessageType.Warning);
+                }
+                EditorGUI.indentLevel--;
             }
-            EditorGUI.indentLevel--;
         }
         
         EditorGUILayout.Space();

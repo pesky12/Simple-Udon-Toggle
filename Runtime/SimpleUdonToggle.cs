@@ -32,9 +32,10 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     [Header("Initial")]
     [SerializeField] private bool defaultOn = false;
     [SerializeField] private NetworkMode networkMode = NetworkMode.None;
-    [Tooltip("Optional key to persist state locally. If empty a key will be generated from the GameObject instance ID.")]
-    [SerializeField] private string persistenceKey = "";
+    [Tooltip("Save toggle state locally using VRC Persistence. Only works with NetworkMode.None or OwnerOnly - NOT compatible with Synced mode.")]
     [SerializeField] private bool persistLocally = false;
+    [Tooltip("Unique key for persistence. Required if persistLocally is enabled.")]
+    [SerializeField] private string persistenceKey = "";
 
     [Header("Click / Trigger")]
     [SerializeField] private bool allowInteract = true; // Interact() click
@@ -78,6 +79,13 @@ public class SimpleUdonToggle : UdonSharpBehaviour
 
     private void Start()
     {
+        // Runtime safeguard: Persistence and Synced mode are mutually exclusive
+        if (persistLocally && networkMode == NetworkMode.Synced)
+        {
+            Debug.LogError("[SimpleUdonToggle] Persistence cannot be used with Synced network mode. Persistence is for local-only toggles. Disabling persistLocally.", this);
+            persistLocally = false;
+        }
+        
         // Compute persistence key
         if (persistLocally)
         {
@@ -132,6 +140,18 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     private void OnValidate()
     {
         ValidateArrayLengths();
+        ValidatePersistenceNetworkMode();
+    }
+
+    private void ValidatePersistenceNetworkMode()
+    {
+        // Persistence and network sync are mutually exclusive
+        // Persistence is for local-only toggles; synced state comes from network
+        if (persistLocally && networkMode == NetworkMode.Synced)
+        {
+            Debug.LogWarning($"[SimpleUdonToggle] '{gameObject.name}': Persistence cannot be used with Synced network mode. Persistence is for local-only toggles. Disabling persistLocally.", this);
+            persistLocally = false;
+        }
     }
 
     private void ValidateArrayLengths()
