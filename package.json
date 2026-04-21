@@ -1,7 +1,7 @@
 {
   "name": "com.pesky.box.simpletoggle",
   "displayName": "Simple Udon Toggle",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A flexible toggle component for VRChat worlds. Supports GameObjects, Components, UI toggles, Udon events, and network sync with minimal setup.",
   "unity": "2022.3",
   "author": {
