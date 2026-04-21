@@ -13,6 +13,18 @@ using VRC.Udon;
 [CustomEditor(typeof(SimpleUdonToggle))]
 public class SimpleUdonToggleEditor : Editor
 {
+    // --- Visual Styles ---
+    private GUIStyle _onSectionStyle;
+    private GUIStyle _offSectionStyle;
+    private GUIContent _onIcon;
+    private GUIContent _offIcon;
+    private GUIContent _autoAssignIcon;
+    private GUIContent _settingsIcon;
+    
+    // Colors for sections
+    private static readonly Color OnColor = new Color(0.2f, 0.6f, 0.2f, 0.3f);  // Green tint
+    private static readonly Color OffColor = new Color(0.6f, 0.2f, 0.2f, 0.3f); // Red tint
+
     // --- Main Properties ---
     SerializedProperty toggleNameProp;
     SerializedProperty defaultOnProp;
@@ -47,6 +59,9 @@ public class SimpleUdonToggleEditor : Editor
     
     private void OnEnable()
     {
+        // --- Initialize Visual Styles ---
+        InitializeStyles();
+        
         // --- Main Properties ---
         toggleNameProp = serializedObject.FindProperty("toggleName");
         defaultOnProp = serializedObject.FindProperty("defaultOn");
@@ -79,34 +94,58 @@ public class SimpleUdonToggleEditor : Editor
         otherTogglesStateWhenOnProp = serializedObject.FindProperty("otherTogglesStateWhenOn");
         otherTogglesStateWhenOffProp = serializedObject.FindProperty("otherTogglesStateWhenOff");
     }
+    
+    private void InitializeStyles()
+    {
+        // ON section style (green tint)
+        _onSectionStyle = new GUIStyle(EditorStyles.helpBox)
+        {
+            padding = new RectOffset(10, 10, 8, 8)
+        };
+        
+        // OFF section style (red tint)
+        _offSectionStyle = new GUIStyle(EditorStyles.helpBox)
+        {
+            padding = new RectOffset(10, 10, 8, 8)
+        };
+        
+        // Icons (Unity built-in)
+        _onIcon = EditorGUIUtility.IconContent("d_PlayButton");
+        _offIcon = EditorGUIUtility.IconContent("d_PauseButton");
+        _autoAssignIcon = EditorGUIUtility.IconContent("d_SceneViewTools");
+        _settingsIcon = EditorGUIUtility.IconContent("d_Settings");
+    }
 
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
-        // --- Auto-Assignment Buttons ---
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Auto-Assignment", EditorStyles.boldLabel);
+        // --- Auto-Assignment Section ---
+        DrawSectionHeader(_autoAssignIcon, "Auto-Assignment");
         
         EditorGUILayout.PropertyField(toggleNameProp, new GUIContent("Toggle Name"));
         
         SimpleUdonToggle script = (SimpleUdonToggle)target;
         
-        if (GUILayout.Button("Auto-Assign All Targets by Name"))
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Auto-Assign All Targets by Name", GUILayout.Height(24)))
         {
             SetupForInstance(script);
             EditorUtility.SetDirty(target);
         }
-
-        if (GUILayout.Button("Setup All SimpleUdonToggles in Scene"))
+        EditorGUILayout.EndHorizontal();
+        
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Setup All SimpleUdonToggles in Scene", GUILayout.Height(24)))
         {
             SetupAllInScene();
         }
+        EditorGUILayout.EndHorizontal();
         
         EditorGUILayout.HelpBox("Place SimpleToggleMarker components on GameObjects with matching 'Toggle Name' to auto-assign them.", MessageType.Info);
 
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Core Settings", EditorStyles.boldLabel);
+        EditorGUILayout.Space(4);
+        DrawSectionHeader(_settingsIcon, "Core Settings");
         EditorGUILayout.PropertyField(defaultOnProp);
         EditorGUILayout.PropertyField(networkModeProp);
         
@@ -135,14 +174,14 @@ public class SimpleUdonToggleEditor : Editor
             }
         }
         
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Activation Methods", EditorStyles.boldLabel);
+        EditorGUILayout.Space(4);
+        DrawSectionHeader(EditorGUIUtility.IconContent("d_PreMatCube"), "Activation Methods");
         EditorGUILayout.PropertyField(allowInteractProp, new GUIContent("Allow Click Toggle (Interact)"));
         EditorGUILayout.PropertyField(toggleOnTriggerEnterProp);
         EditorGUILayout.PropertyField(toggleOnTriggerExitProp);
 
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("UI Linking", EditorStyles.boldLabel);
+        EditorGUILayout.Space(4);
+        DrawSectionHeader(EditorGUIUtility.IconContent("d_Toggle Icon"), "UI Linking");
         EditorGUILayout.PropertyField(uiTogglesProp, true);
         if (uiTogglesProp.arraySize > 0)
         {
@@ -152,49 +191,86 @@ public class SimpleUdonToggleEditor : Editor
             EditorGUI.indentLevel--;
         }
 
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
+        EditorGUILayout.Space(4);
+        DrawSectionHeader(EditorGUIUtility.IconContent("d_PreMatQuad"), "Actions");
         
-        // --- ON STATE ---
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        // --- ON STATE (Green tinted) ---
+        Color prevBgColor = GUI.backgroundColor;
+        GUI.backgroundColor = OnColor;
+        EditorGUILayout.BeginVertical(_onSectionStyle);
+        GUI.backgroundColor = prevBgColor;
         EditorGUI.indentLevel++;
-        EditorGUILayout.LabelField("When Toggle is ON", EditorStyles.boldLabel);
-        DrawSimpleList(targetGameObjectsProp, gameObjectStateWhenOnProp, "GameObjects");
-        DrawSimpleList(targetBehavioursProp, behaviourStateWhenOnProp, "Components");
-        DrawUdonSimpleList(udonTargetsProp, udonEventWhenOnProp, "Udon Events");
-        DrawOtherTogglesList(otherTogglesToSyncProp, otherTogglesStateWhenOnProp, "Other Toggles");
+        DrawStateHeader(_onIcon, "When Toggle is ON", new Color(0.3f, 0.7f, 0.3f));
+        DrawSimpleList(targetGameObjectsProp, gameObjectStateWhenOnProp, "GameObjects", "d_GameObject Icon", "Active");
+        DrawSimpleList(targetBehavioursProp, behaviourStateWhenOnProp, "Components", "d_ScriptableObject Icon", "Enabled");
+        DrawUdonSimpleList(udonTargetsProp, udonEventWhenOnProp, "Udon Events", "d_cs Script Icon");
+        DrawOtherTogglesList(otherTogglesToSyncProp, otherTogglesStateWhenOnProp, "Other Toggles", "d_Toggle Icon", "Set ON");
         EditorGUI.indentLevel--;
         EditorGUILayout.EndVertical();
 
-        // --- OFF STATE ---
-        EditorGUILayout.Space();
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        // --- OFF STATE (Red tinted) ---
+        EditorGUILayout.Space(4);
+        GUI.backgroundColor = OffColor;
+        EditorGUILayout.BeginVertical(_offSectionStyle);
+        GUI.backgroundColor = prevBgColor;
         EditorGUI.indentLevel++;
-        EditorGUILayout.LabelField("When Toggle is OFF", EditorStyles.boldLabel);
-        DrawSimpleList(targetGameObjectsProp, gameObjectStateWhenOffProp, "GameObjects");
-        DrawSimpleList(targetBehavioursProp, behaviourStateWhenOffProp, "Components");
-        DrawUdonSimpleList(udonTargetsProp, udonEventWhenOffProp, "Udon Events");
-        DrawOtherTogglesList(otherTogglesToSyncProp, otherTogglesStateWhenOffProp, "Other Toggles");
+        DrawStateHeader(_offIcon, "When Toggle is OFF", new Color(0.7f, 0.3f, 0.3f));
+        DrawSimpleList(targetGameObjectsProp, gameObjectStateWhenOffProp, "GameObjects", "d_GameObject Icon", "Active");
+        DrawSimpleList(targetBehavioursProp, behaviourStateWhenOffProp, "Components", "d_ScriptableObject Icon", "Enabled");
+        DrawUdonSimpleList(udonTargetsProp, udonEventWhenOffProp, "Udon Events", "d_cs Script Icon");
+        DrawOtherTogglesList(otherTogglesToSyncProp, otherTogglesStateWhenOffProp, "Other Toggles", "d_Toggle Icon", "Set ON");
         EditorGUI.indentLevel--;
         EditorGUILayout.EndVertical();
 
         serializedObject.ApplyModifiedProperties();
     }
-
-    private void DrawSimpleList(SerializedProperty listProp, SerializedProperty stateProp, string header)
+    
+    private void DrawSectionHeader(GUIContent icon, string title)
     {
-        EditorGUILayout.LabelField(header, EditorStyles.miniBoldLabel);
+        EditorGUILayout.BeginHorizontal();
+        
+        // Icon inline with text
+        if (icon != null)
+        {
+            GUILayout.Label(icon, GUILayout.Width(20), GUILayout.Height(18));
+        }
+        
+        // Bold title text
+        EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+        EditorGUILayout.EndHorizontal();
+    }
+    
+    private void DrawStateHeader(GUIContent icon, string title, Color accentColor)
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUIContent content = icon != null ? new GUIContent(title, icon.image) : new GUIContent(title);
+        GUIStyle coloredLabel = new GUIStyle(EditorStyles.boldLabel)
+        {
+            normal = { textColor = accentColor }
+        };
+        EditorGUILayout.LabelField(content, coloredLabel, GUILayout.Height(20));
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawSimpleList(SerializedProperty listProp, SerializedProperty stateProp, string header, string iconKey = null, string stateLabel = "On")
+    {
+        GUIContent headerContent = iconKey != null && EditorGUIUtility.IconContent(iconKey) != null
+            ? new GUIContent(header, EditorGUIUtility.IconContent(iconKey).image)
+            : new GUIContent(header);
+        EditorGUILayout.LabelField(headerContent, EditorStyles.miniBoldLabel);
         
         // Ensure arrays are sized correctly
         if (stateProp.arraySize != listProp.arraySize) stateProp.arraySize = listProp.arraySize;
 
         for (int i = 0; i < listProp.arraySize; i++)
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(listProp.GetArrayElementAtIndex(i), GUIContent.none);
-            EditorGUILayout.PropertyField(stateProp.GetArrayElementAtIndex(i), GUIContent.none, GUILayout.Width(30));
-            
-            if (GUILayout.Button("-", GUILayout.Width(20)))
+            Rect rowRect = EditorGUILayout.GetControlRect();
+
+            if (DrawObjectStateRow(
+                rowRect,
+                listProp.GetArrayElementAtIndex(i),
+                stateProp.GetArrayElementAtIndex(i),
+                stateLabel))
             {
                 // Delete from all three arrays at the same index to keep them in sync
                 // Break after deletion since array size has changed
@@ -203,7 +279,6 @@ public class SimpleUdonToggleEditor : Editor
                 stateProp.DeleteArrayElementAtIndex(i);
                 break;
             }
-            EditorGUILayout.EndHorizontal();
         }
 
         if (GUILayout.Button($"Add New {header.Replace("s","")} Target"))
@@ -213,9 +288,37 @@ public class SimpleUdonToggleEditor : Editor
         EditorGUILayout.Space();
     }
 
-    private void DrawUdonSimpleList(SerializedProperty listProp, SerializedProperty eventProp, string header)
+    private bool DrawObjectStateRow(Rect rowRect, SerializedProperty objectProp, SerializedProperty stateProp, string stateLabel)
     {
-        EditorGUILayout.LabelField(header, EditorStyles.miniBoldLabel);
+        const float spacing = 4f;
+        const float buttonWidth = 20f;
+
+        int previousIndentLevel = EditorGUI.indentLevel;
+        Rect contentRect = EditorGUI.IndentedRect(rowRect);
+        EditorGUI.indentLevel = 0;
+
+        GUIContent stateContent = new GUIContent(stateLabel);
+        float stateWidth = Mathf.Max(68f, EditorStyles.toggle.CalcSize(stateContent).x + 20f);
+        float objectWidth = Mathf.Max(0f, contentRect.width - stateWidth - buttonWidth - (spacing * 2f));
+
+        Rect objectRect = new Rect(contentRect.x, contentRect.y, objectWidth, contentRect.height);
+        Rect stateRect = new Rect(objectRect.xMax + spacing, contentRect.y, stateWidth, contentRect.height);
+        Rect buttonRect = new Rect(stateRect.xMax + spacing, contentRect.y, buttonWidth, contentRect.height);
+
+        EditorGUI.PropertyField(objectRect, objectProp, GUIContent.none);
+        stateProp.boolValue = EditorGUI.ToggleLeft(stateRect, stateContent, stateProp.boolValue);
+
+        bool remove = GUI.Button(buttonRect, "-");
+        EditorGUI.indentLevel = previousIndentLevel;
+        return remove;
+    }
+
+    private void DrawUdonSimpleList(SerializedProperty listProp, SerializedProperty eventProp, string header, string iconKey = null)
+    {
+        GUIContent headerContent = iconKey != null && EditorGUIUtility.IconContent(iconKey) != null
+            ? new GUIContent(header, EditorGUIUtility.IconContent(iconKey).image)
+            : new GUIContent(header);
+        EditorGUILayout.LabelField(headerContent, EditorStyles.miniBoldLabel);
 
         // Ensure arrays are sized correctly
         if (eventProp.arraySize != listProp.arraySize) eventProp.arraySize = listProp.arraySize;
@@ -245,20 +348,25 @@ public class SimpleUdonToggleEditor : Editor
         EditorGUILayout.Space();
     }
 
-    private void DrawOtherTogglesList(SerializedProperty listProp, SerializedProperty stateProp, string header)
+    private void DrawOtherTogglesList(SerializedProperty listProp, SerializedProperty stateProp, string header, string iconKey = null, string stateLabel = "ON")
     {
-        EditorGUILayout.LabelField(header, EditorStyles.miniBoldLabel);
+        GUIContent headerContent = iconKey != null && EditorGUIUtility.IconContent(iconKey) != null
+            ? new GUIContent(header, EditorGUIUtility.IconContent(iconKey).image)
+            : new GUIContent(header);
+        EditorGUILayout.LabelField(headerContent, EditorStyles.miniBoldLabel);
 
         // Ensure arrays are sized correctly
         if (stateProp.arraySize != listProp.arraySize) stateProp.arraySize = listProp.arraySize;
 
         for (int i = 0; i < listProp.arraySize; i++)
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(listProp.GetArrayElementAtIndex(i), GUIContent.none);
-            EditorGUILayout.PropertyField(stateProp.GetArrayElementAtIndex(i), GUIContent.none, GUILayout.Width(30));
-            
-            if (GUILayout.Button("-", GUILayout.Width(20)))
+            Rect rowRect = EditorGUILayout.GetControlRect();
+
+            if (DrawObjectStateRow(
+                rowRect,
+                listProp.GetArrayElementAtIndex(i),
+                stateProp.GetArrayElementAtIndex(i),
+                stateLabel))
             {
                 // Delete from all three arrays at the same index to keep them in sync
                 // Break after deletion since array size has changed
@@ -267,7 +375,6 @@ public class SimpleUdonToggleEditor : Editor
                 stateProp.DeleteArrayElementAtIndex(i);
                 break;
             }
-            EditorGUILayout.EndHorizontal();
         }
 
         if (GUILayout.Button($"Add New {header.Replace("s","")} Target"))

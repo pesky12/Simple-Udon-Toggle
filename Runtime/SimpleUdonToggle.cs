@@ -26,11 +26,9 @@ public class SimpleUdonToggle : UdonSharpBehaviour
 {
     #region Configuration Fields
     // --- Configuration ---
-    [Header("Identification")]
     [Tooltip("Unique name for this toggle - used to auto-assign UI toggles with matching SimpleToggleMarker components")]
     [SerializeField] public string toggleName;
     
-    [Header("Initial")]
     [SerializeField] private bool defaultOn = false;
     [SerializeField] private NetworkMode networkMode = NetworkMode.None;
     [Tooltip("Save toggle state locally using VRC Persistence. Only works with NetworkMode.None or OwnerOnly - NOT compatible with Synced mode.")]
@@ -38,33 +36,27 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     [Tooltip("Unique key for persistence. Required if persistLocally is enabled.")]
     [SerializeField] private string persistenceKey = "";
 
-    [Header("Click / Trigger")]
     [SerializeField] private bool allowInteract = true; // Interact() click
     [SerializeField] private bool toggleOnTriggerEnter = false; // Toggle when local player enters trigger (local only)
     [SerializeField] private bool toggleOnTriggerExit = false; // Toggle on exit
 
-    [Header("UI")]
     [SerializeField] public Toggle[] uiToggles;
     [SerializeField] private bool updateUITogglesOnStart = true;
     private bool _suppressUiCallback = false;
 
-    [Header("GameObjects (per-item desired states)")]
     [SerializeField] private GameObject[] targetGameObjects;
     [SerializeField] private bool[] gameObjectStateWhenOn;   // if isOn -> setActive = value
     [SerializeField] private bool[] gameObjectStateWhenOff;  // if !isOn -> setActive = value
 
-    [Header("Components (enable/disable)")]
     [Tooltip("Components to enable/disable. Note: UdonSharpBehaviour targets should use the Udon Targets section below instead.")]
     [SerializeField] private Behaviour[] targetBehaviours;
     [SerializeField] private bool[] behaviourStateWhenOn;
     [SerializeField] private bool[] behaviourStateWhenOff;
 
-    [Header("Udon Targets (send events)")]
     [SerializeField] private UdonBehaviour[] udonTargets;
     [SerializeField] private string[] udonEventWhenOn;   // Event name to SendCustomEvent to target when toggle becomes ON
     [SerializeField] private string[] udonEventWhenOff;  // Event name to SendCustomEvent to target when toggle becomes OFF
     
-    [Header("Other Toggles")]
     [SerializeField] private SimpleUdonToggle[] otherTogglesToSync; // Other toggles to set to the same state
     [SerializeField] private bool[] otherTogglesStateWhenOn;     // true = set to ON, false = set to OFF
     [SerializeField] private bool[] otherTogglesStateWhenOff;
