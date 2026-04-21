@@ -67,8 +67,8 @@ public class SimpleUdonToggle : UdonSharpBehaviour
     [SerializeField] private bool[] otherTogglesStateWhenOn;     // true = set to ON, false = set to OFF
     [SerializeField] private bool[] otherTogglesStateWhenOff;
     
-    // --- Synced state (used when networkMode == Synced) ---
-    [UdonSynced] public bool syncedIsOn;
+    // --- Synced state ---
+    [UdonSynced(UdonSyncMode.None)] public bool syncedIsOn;
 
     // Local cached state
     private bool isOn;
